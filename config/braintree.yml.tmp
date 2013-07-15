@@ -1,0 +1,12 @@
+# Copy this file to braintree.yml
+# DO NOT add to your source control as it contains your keys
+
+development:
+  merchant_id: YOUR_MERCHANT_ID
+  public_key: YOUR_API_KEY
+  private_key: YOUR_SECRET_KEY
+
+test:
+  merchant_id: test_merchant_id
+  public_key: test_merchant_api_key
+  private_key: test_merchant_secret_key

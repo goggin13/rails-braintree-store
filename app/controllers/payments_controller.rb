@@ -6,11 +6,6 @@ class PaymentsController < ApplicationController
   end
 
   def create
-    Braintree::Configuration.environment = :sandbox
-    Braintree::Configuration.merchant_id = "your_merchant_id"
-    Braintree::Configuration.public_key = "your_public_key"
-    Braintree::Configuration.private_key = "your_private_key"
-
     result = Braintree::Transaction.sale(
       :amount => "1000.00",
       :credit_card => {
