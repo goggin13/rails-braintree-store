@@ -1,4 +1,7 @@
 class ProductsController < ApplicationController
+  before_filter :authenticate_user!
+  before_filter :set_customer, only: [:show]
+
   # GET /products
   # GET /products.json
   def index

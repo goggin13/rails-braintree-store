@@ -5,8 +5,10 @@ development:
   merchant_id: YOUR_MERCHANT_ID
   public_key: YOUR_API_KEY
   private_key: YOUR_SECRET_KEY
+  environment: sandbox
 
 test:
   merchant_id: test_merchant_id
   public_key: test_merchant_api_key
   private_key: test_merchant_secret_key
+  environment: sandbox

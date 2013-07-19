@@ -1,35 +1,40 @@
 class PaymentsController < ApplicationController
-  def show
-  end
-
-  def new
-  end
+  before_filter :authenticate_user!
+  before_filter :set_customer
 
   def create
-    result = Braintree::Transaction.sale(
-      :amount => "1000.00",
-      :credit_card => {
-        :number => "5105105105105100",
-        :expiration_month => "05",
-        :expiration_year => "12"
+    transaction_params = {
+      :amount => Product.find(params[:product_id]).price,
+      :customer_id => current_user.braintree_customer_id,
+    }
+    if params[:token]
+      transaction_params[:payment_method_token] = params[:token]
+    else
+      transaction_params[:credit_card] = {
+        :number => params[:number],
+        :cvv => params[:cvv],
+        :expiration_month => params[:month],
+        :expiration_year => params[:year],
       }
-    )
+      transaction_params[:options] = {:store_in_vault => true}
+    end
+
+    result = Braintree::Transaction.sale(transaction_params)
 
     if result.success?
-        puts "Transaction ID: #{result.transaction.id}"
-        # status will be authorized or submitted_for_settlement
-        puts "Transaction Status: #{result.transaction.status}"
+      # status will be authorized or submitted_for_settlement
+      @message = "Transaction ID: #{result.transaction.id}, #{result.transaction.status}"
     else
-      puts "Message: #{result.message}"
+      @message = "Message: #{result.message}"
       if result.transaction.nil?
         # validation errors prevented transaction from being created
-        p result.errors
+        Rails.logger.debug result.errors
       else
-        puts "Transaction ID: #{result.transaction.id}"
         # status will be processor_declined, gateway_rejected, or failed
-        puts "Transaction Status: #{result.transaction.status}"
+        @message += " ~ Transaction ID: #{result.transaction.id}, #{result.transaction.status}"
       end
     end
-    redirect_to payments_show_path
+
+    render 'show'
   end
 end

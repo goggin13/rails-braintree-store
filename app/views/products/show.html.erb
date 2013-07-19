@@ -10,23 +10,44 @@
   <%= @product.price %>
 </p>
 
+<% unless @customer.credit_cards.empty? %>
+  <%= form_tag payments_path do %>
 
-<p>
-  <%= form_tag payments_create_path do %>
+    <%= hidden_field_tag :product_id, @product.id %>
 
-    <%= label_tag :credit_card_number, 'Credit Card Number'  %>
-    <%= text_field_tag :credit_card_number %>
-
-    <%= label_tag :cvv, 'CVV'  %>
-    <%= text_field_tag :cvv %>
-
-    <%= label_tag :expiration_date, 'Expiration Date'  %>
-    <%= text_field_tag :expiration_date %>
+    <%= select_tag "token", options_for_select(@customer.credit_cards.map { |card|
+          ["#{card.card_type}-#{card.last_4}", card.token]
+        })
+     %>
     
-    <%= submit_tag 'Purchase' %>
+    <%= submit_tag "Pay with existing card" %>
 
   <% end %>
-</p>
 
-<%= link_to 'Edit', edit_product_path(@product) %> |
-<%= link_to 'Back', products_path %>
+  <hr/>
+  Or<br/>
+<% end %>
+
+<form action="<%= payments_path %>" method="POST" id="braintree-payment-form">
+  <p>
+    <label>Card Number</label>
+    <input type="text" size="20" autocomplete="off" data-encrypted-name="number" />
+  </p>
+  <p>
+    <label>CVV</label>
+    <input type="text" size="4" autocomplete="off" data-encrypted-name="cvv" />
+  </p>
+  <p>
+    <label>Expiration (MM/YYYY)</label>
+    <input type="text" size="2" name="month" /> / <input type="text" size="4" name="year" />
+  </p>
+
+  <input type="hidden" name="product_id" value="<%= @product.id %>" /> 
+  <input type="submit" id="submit" value="Pay with New Card" />
+</form>
+
+<script type="text/javascript" src="https://js.braintreegateway.com/v1/braintree.js"></script>
+<script type="text/javascript">
+  var braintree = Braintree.create("MIIBCgKCAQEAugUBh83MKEjt9c8Gt8DSop5azrknhJEPChLL6af4xiYoCKoAVutmUhKLvNZV8DhfCqnBBJJqwqVMhYFYiigG9icIyMUAdHEoadc4NAx2D0Q5UVC90Dsm5ruHjXrBPvjgAa0Zh7zZiaP/4hwRw5+SQYL3d2GMg2hL9erke91y3/9sdHXFzbFeAuCZwkDf1MmD7o5DTakZJwfpGDFodBN0n2f/E1/2YhCdCYE6D1jQzQcjyZ3AyKHEsU8s8QtObS1bPA307moXnetTpoUe10O5Wb2QbRM4WlXp68sxRbyj6rHXjruUgWA4NnmJi06j7pv4s7qFgIZPDXi/4IJE/LCkvwIDAQAB");
+  braintree.onSubmitEncryptForm('braintree-payment-form');
+</script>
